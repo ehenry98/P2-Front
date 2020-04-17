@@ -136,7 +136,7 @@ function createOperator() {
   imageRef.put(workerImageFile).then(function (result) {
     imageRef.getDownloadURL().then(function (result) {
       workerImageUrl = result;
-      db.ref('workers/' + workerId).set({
+      var workerObj = {
         id: workerId,
         companyEmailRef: auth.currentUser.uid,
         name: nameWorker,
@@ -145,7 +145,15 @@ function createOperator() {
         password: passwordWorker,
         photoUrl: workerImageUrl,
         admin: false,
-      });
+      };
+      //Create reference into workers collection
+      db.ref('workers/' + workerId).set(workerObj);
+      //Create reference into companie/uid/workers
+      var update = {};
+      update[
+        'companies/' + auth.currentUser.uid + '/workers/' + workerId
+      ] = workerObj;
+      db.ref().update(update);
     });
   });
 }
@@ -242,18 +250,23 @@ function getWorker(workerId, type) {
 }
 
 function editWorker() {
-  id = document.getElementById('workerId').value;
-  name = document.getElementById('workerNameEdit').value;
-  lastName = document.getElementById('workerLastNameEdit').value;
-  email = document.getElementById('workerEmailEdit').value;
-  password = document.getElementById('workerPasswordEdit').value;
-  workerImage = document.getElementById('workerImageEdit').src;
+  workerObj = {
+    id: document.getElementById('workerId').value,
+    name: document.getElementById('workerNameEdit').value,
+    lastName: document.getElementById('workerLastNameEdit').value,
+    email: document.getElementById('workerEmailEdit').value,
+    password: document.getElementById('workerPasswordEdit').value,
+    workerImage: document.getElementById('workerImageEdit').src,
+  };
   var updates = {};
-  updates['workers/' + id + '/name'] = name;
-  updates['workers/' + id + '/lastName'] = lastName;
-  updates['workers/' + id + '/email'] = email;
-  updates['workers/' + id + '/password'] = password;
-  updates['workers/' + id + '/photoUrl'] = workerImage;
+  updates['workers/' + workerObj.id + '/name'] = workerObj.name;
+  updates['workers/' + workerObj.id + '/lastName'] = workerObj.lastName;
+  updates['workers/' + workerObj.id + '/email'] = workerObj.email;
+  updates['workers/' + workerObj.id + '/password'] = workerObj.password;
+  updates['workers/' + workerObj.id + '/photoUrl'] = workerObj.workerImage;
+  updates[
+    'companies/' + auth.currentUser.uid + '/workers/' + workerObj.id
+  ] = workerObj;
   db.ref().update(updates);
   window.location.href = 'list.html';
 }
@@ -268,6 +281,9 @@ function deleteWorker(workerId) {
   }).then((willDelete) => {
     if (willDelete) {
       db.ref('workers/' + workerId).remove();
+      db.ref(
+        'companies/' + auth.currentUser.uid + '/workers/' + workerId
+      ).remove();
       window.location.href = 'list.html';
     }
   });
