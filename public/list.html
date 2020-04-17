@@ -140,7 +140,7 @@
                   type="file"
                   class="form-control"
                   id="imageWorker"
-                  onchange="setPicture(event)"
+                  onchange="setWorkerPicture(event)"
                 />
               </div>
             </div>
@@ -159,14 +159,14 @@
       </div>
     </div>
     <div
-      class="modal fade"
+      class="modal fade bd-example-modal-lg"
       id="getOperatorModal"
       tabindex="-1"
       role="dialog"
       aria-labelledby="exampleModalCenterTitle"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 style="font-family: Montserrat;">
@@ -182,69 +182,201 @@
             </button>
           </div>
           <div class="modal-body">
-            <div class="container">
-              <div class="row">
-                <div class="col-lg-6">
-                  <img
-                    src=""
-                    class="card-img"
-                    style="width: 400px; height: 400px;"
-                    id="imageCompanyProfile"
-                  />
+            <div class="row">
+              <div class="col-lg-5">
+                <img
+                  src=""
+                  class="card-img"
+                  style="width: 300px; height: 300px;"
+                  id="workerImage"
+                />
+              </div>
+              <div class="col-lg-7">
+                <div class="row">
+                  <div class="col-lg-12">
+                    <label class="label-login" style="font-family: Montserrat;"
+                      >Nombre</label
+                    >
+                  </div>
+                  <div class="col-lg-12">
+                    <div class="input-group input-group-md">
+                      <input
+                        type="text"
+                        id="workerName"
+                        class="form-control"
+                        disabled
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div class="col-lg-6">
+                <div class="row">
                   <div class="col-lg-12">
-                    <label style="font-family: Montserrat;"
-                      >Nombre operador</label
+                    <label class="label-login" style="font-family: Montserrat;"
+                      >Apellido</label
                     >
                   </div>
-                  <div class="col-lg-12" style="margin-bottom: 20px;">
-                    <div class="input-group input-group-md">
-                      <input type="text" class="form-control" id="nameWorker" />
-                    </div>
-                  </div>
                   <div class="col-lg-12">
-                    <label style="font-family: Montserrat;"
-                      >Correo electrónico</label
-                    >
-                  </div>
-                  <div class="col-lg-12" style="margin-bottom: 20px;">
                     <div class="input-group input-group-md">
                       <input
                         type="text"
+                        id="workerLastName"
                         class="form-control"
-                        id="userEmailWorker"
+                        disabled
                       />
                     </div>
                   </div>
+                </div>
+                <div class="row">
                   <div class="col-lg-12">
-                    <label style="font-family: Montserrat;">Contraseña</label>
+                    <label class="label-login" style="font-family: Montserrat;"
+                      >Email</label
+                    >
                   </div>
-                  <div class="col-lg-12" style="margin-bottom: 20px;">
+                  <div class="col-lg-12">
                     <div class="input-group input-group-md">
                       <input
                         type="text"
+                        id="workerEmail"
                         class="form-control"
-                        id="passwordWorker"
+                        disabled
                       />
                     </div>
                   </div>
+                </div>
+                <div class="row">
                   <div class="col-lg-12">
-                    <label style="font-family: Montserrat;"
-                      >Imagen de perfil</label
+                    <label class="label-login" style="font-family: Montserrat;"
+                      >Contraseña</label
                     >
                   </div>
+                  <div class="col-lg-12">
+                    <div class="input-group input-group-md">
+                      <input
+                        type="text"
+                        id="workerPassword"
+                        class="form-control"
+                        disabled
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="modal fade bd-example-modal-lg"
+      id="editOperatorModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalCenterTitle"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 style="font-family: Montserrat;">
+              Editar operador
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-lg-5">
+                <img
+                  src=""
+                  class="card-img"
+                  style="width: 300px; height: 300px;"
+                  id="workerImageEdit"
+                />
+              </div>
+              <div class="col-lg-7">
+                <div class="row">
+                  <div class="col-lg-12">
+                    <label class="label-login" style="font-family: Montserrat;"
+                      >Nombre</label
+                    >
+                  </div>
+                  <div class="col-lg-12">
+                    <div class="input-group input-group-md">
+                      <input
+                        type="text"
+                        id="workerNameEdit"
+                        class="form-control"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-lg-12">
+                    <label class="label-login" style="font-family: Montserrat;"
+                      >Apellido</label
+                    >
+                  </div>
+                  <div class="col-lg-12">
+                    <div class="input-group input-group-md">
+                      <input
+                        type="text"
+                        id="workerLastNameEdit"
+                        class="form-control"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-lg-12">
+                    <label class="label-login" style="font-family: Montserrat;"
+                      >Email</label
+                    >
+                  </div>
+                  <div class="col-lg-12">
+                    <div class="input-group input-group-md">
+                      <input
+                        type="text"
+                        id="workerEmailEdit"
+                        class="form-control"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-lg-12">
+                    <label class="label-login" style="font-family: Montserrat;"
+                      >Contraseña</label
+                    >
+                  </div>
+                  <div class="col-lg-12">
+                    <div class="input-group input-group-md">
+                      <input
+                        type="text"
+                        id="workerPasswordEdit"
+                        class="form-control"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
                   <div class="col-lg-12">
                     <div class="form-group">
                       <input
                         type="file"
                         class="form-control"
                         id="imageWorker"
-                        onchange="setPicture(event)"
+                        onchange="setWorkerPicture(event)"
                       />
                     </div>
                   </div>
                 </div>
+                <input id="workerId" name="workerId" type="hidden" />
               </div>
             </div>
           </div>
@@ -253,14 +385,15 @@
               type="button"
               class="btn btn-primary"
               data-dismiss="modal"
-              onclick="createOperator()"
+              onclick="editWorker()"
             >
-              Crear
+              Editar
             </button>
           </div>
         </div>
       </div>
     </div>
+
     <script
       src="https://kit.fontawesome.com/4aacf972ad.js"
       crossorigin="anonymous"

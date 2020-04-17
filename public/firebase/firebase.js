@@ -1,12 +1,18 @@
 var imageFile;
 var imageUrl;
+var workerImageFile;
+var workerImageUrl;
 
 const auth = firebase.auth();
 const db = firebase.database();
 const storage = firebase.storage();
 
-function setPicture(event) {
+function setCompanyPicture(event) {
   imageFile = event.target.files[0];
+}
+
+function setWorkerPicture(event) {
+  workerImageFile = event.target.files[0];
 }
 
 function createCompany() {
@@ -23,7 +29,7 @@ function createCompany() {
     docNum: docNum,
     phone: phone,
     photoUrl: imageUrl,
-    type: 'admin',
+    admin: true,
   });
   console.log('Empresa creada');
 }
@@ -126,13 +132,21 @@ function createOperator() {
   emailWorker = document.getElementById('userEmailWorker').value;
   passwordWorker = document.getElementById('passwordWorker').value;
   workerId = generateWorkerId();
-  db.ref('workers/' + workerId).set({
-    id: workerId,
-    companyEmailRef: auth.currentUser.uid,
-    name: nameWorker,
-    lastName: lastName,
-    email: emailWorker,
-    password: passwordWorker,
+  var imageRef = storage.ref().child('Operators pictures').child(emailWorker);
+  imageRef.put(workerImageFile).then(function (result) {
+    imageRef.getDownloadURL().then(function (result) {
+      workerImageUrl = result;
+      db.ref('workers/' + workerId).set({
+        id: workerId,
+        companyEmailRef: auth.currentUser.uid,
+        name: nameWorker,
+        lastName: lastName,
+        email: emailWorker,
+        password: passwordWorker,
+        photoUrl: workerImageUrl,
+        admin: false,
+      });
+    });
   });
 }
 
@@ -153,7 +167,9 @@ function getWorkers() {
           type="button"
           class="btn btn-primary nav-button"
           style="display: inline-block;"
-          onclick="getWorker('${data.val().id}')"
+          data-toggle="modal"
+          data-target="#getOperatorModal"
+          onclick="getWorker('${data.val().id}',1)"
         >
           <i class="fa fa-eye" aria-hidden="true"></i>
         </button>
@@ -161,7 +177,9 @@ function getWorkers() {
           type="button"
           class="btn btn-primary nav-button"
           style="display: inline-block;"
-          onclick="editWorker('${data.val().id}')"
+          data-toggle="modal"
+          data-target="#editOperatorModal"
+          onclick="getWorker('${data.val().id}',2)"
         >
           <i class="fa fa-pencil" aria-hidden="true"></i>
         </button>
@@ -200,12 +218,44 @@ function generateWorkerId() {
   return result;
 }
 
-function getWorker(workerEmail) {
-  //$('#getOperatorModal').modal('show');
+function getWorker(workerId, type) {
+  db.ref('/workers/' + workerId).once('value', function (snapshot) {
+    if (type == 1) {
+      document.getElementById('workerName').value = snapshot.val().name;
+      document.getElementById('workerLastName').value = snapshot.val().lastName;
+      document.getElementById('workerEmail').value = snapshot.val().email;
+      document.getElementById('workerPassword').value = snapshot.val().password;
+      document.getElementById('workerImage').src = snapshot.val().photoUrl;
+    } else {
+      document.getElementById('workerNameEdit').value = snapshot.val().name;
+      document.getElementById(
+        'workerLastNameEdit'
+      ).value = snapshot.val().lastName;
+      document.getElementById('workerEmailEdit').value = snapshot.val().email;
+      document.getElementById(
+        'workerPasswordEdit'
+      ).value = snapshot.val().password;
+      document.getElementById('workerImageEdit').src = snapshot.val().photoUrl;
+      document.getElementById('workerId').value = workerId;
+    }
+  });
 }
 
-function editWorker(workerEmail) {
-  //db.ref('workers/' + workerEmail).update({});
+function editWorker() {
+  id = document.getElementById('workerId').value;
+  name = document.getElementById('workerNameEdit').value;
+  lastName = document.getElementById('workerLastNameEdit').value;
+  email = document.getElementById('workerEmailEdit').value;
+  password = document.getElementById('workerPasswordEdit').value;
+  workerImage = document.getElementById('workerImageEdit').src;
+  var updates = {};
+  updates['workers/' + id + '/name'] = name;
+  updates['workers/' + id + '/lastName'] = lastName;
+  updates['workers/' + id + '/email'] = email;
+  updates['workers/' + id + '/password'] = password;
+  updates['workers/' + id + '/photoUrl'] = workerImage;
+  db.ref().update(updates);
+  window.location.href = 'list.html';
 }
 
 function deleteWorker(workerId) {
