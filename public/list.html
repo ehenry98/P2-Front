@@ -74,6 +74,7 @@
           <thead>
             <tr>
               <th class="th-sm">Nombre</th>
+              <th class="th-sm">Apellido</th>
               <th class="th-sm">Email</th>
               <th class="th-sm">Acción</th>
             </tr>
@@ -344,6 +345,7 @@
                         type="text"
                         id="workerEmailEdit"
                         class="form-control"
+                        disabled
                       />
                     </div>
                   </div>
@@ -357,7 +359,7 @@
                   <div class="col-lg-12">
                     <div class="input-group input-group-md">
                       <input
-                        type="text"
+                        type="password"
                         id="workerPasswordEdit"
                         class="form-control"
                       />
@@ -375,7 +377,7 @@
                       <input
                         type="file"
                         class="form-control"
-                        id="imageWorker"
+                        id="imageWorkerModal"
                         onchange="setWorkerPicture(event)"
                       />
                     </div>
@@ -432,5 +434,10 @@
 
     <script type="text/javascript" src="./firebase/firebaseConfig.js"></script>
     <script type="text/javascript" src="./firebase/firebase.js"></script>
+    <script>
+      $('#workers-table').DataTable({
+        columnsDefs: [{ width: '20%', targets: 0 }],
+      });
+    </script>
   </body>
 </html>

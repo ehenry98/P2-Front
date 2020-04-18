@@ -21,6 +21,8 @@ function createCompany() {
   docType = document.getElementById('docType').value;
   docNum = document.getElementById('docNum').value;
   phone = document.getElementById('phone').value;
+  console.log(agentName);
+  console.log(currentUser.uid);
   db.ref('companies/' + currentUser.uid).set({
     id: currentUser.uid,
     agentName: agentName,
@@ -41,7 +43,6 @@ function registerCompany() {
   auth
     .createUserWithEmailAndPassword(userEmail, userPassword)
     .then(function () {
-      window.location.href = 'list.html';
       console.log('Usuario empresa registrado');
     })
     .catch(function (error) {
@@ -58,6 +59,7 @@ function registerCompany() {
         imageRef.getDownloadURL().then(function (result) {
           imageUrl = result;
           createCompany();
+          window.location.href = 'profile.html';
         });
       });
     }
@@ -75,7 +77,12 @@ function logIn() {
       console.log('Usuario logeado correctamente');
     })
     .catch(function (error) {
-      console.log('ErrorCode: ' + error.code + ', message: ' + error.message);
+      swal({
+        title: 'Usuario o contraseña incorrectos!',
+        text: 'Intente de nuevo',
+        icon: 'warning',
+        button: 'Ok',
+      });
     });
 }
 
@@ -101,6 +108,7 @@ function recoverPassword() {
 function getCompany() {
   auth.onAuthStateChanged(function (user) {
     if (user) {
+      var workersArray = [];
       var userId = auth.currentUser.uid;
       var ref = firebase.database().ref('companies');
       ref.on('value', function (snapshot) {
@@ -122,6 +130,15 @@ function getCompany() {
           }
         });
       });
+      db.ref('companies/' + auth.currentUser.uid + '/workers').on(
+        'child_added',
+        function (data) {
+          workersArray.push(data.val());
+          document.getElementById('workersQty').textContent =
+            workersArray.length;
+          console.log(workersArray.length);
+        }
+      );
     }
   });
 }
@@ -154,66 +171,110 @@ function createOperator() {
         'companies/' + auth.currentUser.uid + '/workers/' + workerId
       ] = workerObj;
       db.ref().update(update);
+      // admin
+      //   .auth()
+      //   .createUserWith({
+      //     email: emailWorker,
+      //     emailVerified: true,
+      //     password: passwordWorker,
+      //     disabled: false,
+      //   })
+      //   .then(function (userRecord) {
+      //     swal({
+      //       title: 'Operación exitosa',
+      //       text: 'Operador ' + nameWorker + ' ' + lastName,
+      //       icon: 'success',
+      //       button: 'Ok',
+      //     });
+      //   })
+      //   .catch(function (error) {
+      //     swal({
+      //       title: 'Error al crear operador',
+      //       text: error.message,
+      //       icon: 'warning',
+      //       button: 'Ok',
+      //     });
+      //   });
     });
   });
 }
 
 function getWorkers() {
-  db.ref('workers').on('child_added', function (data) {
-    //debugger;
-    console.log(data.val());
-    //$('.table').DataTable().destroy();
-    if ($.fn.DataTable.isDataTable('#workers-table'))
-      $('#workers-table').DataTable().destroy();
-    document.getElementById('tableBodyOperators').innerHTML += `
-  <tr>
-    <td>${data.val().name}</td>
-    <td>${data.val().email}</td>
-    <td>
-      <div style="position: absolute;">
-        <button
-          type="button"
-          class="btn btn-primary nav-button"
-          style="display: inline-block;"
-          data-toggle="modal"
-          data-target="#getOperatorModal"
-          onclick="getWorker('${data.val().id}',1)"
-        >
-          <i class="fa fa-eye" aria-hidden="true"></i>
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary nav-button"
-          style="display: inline-block;"
-          data-toggle="modal"
-          data-target="#editOperatorModal"
-          onclick="getWorker('${data.val().id}',2)"
-        >
-          <i class="fa fa-pencil" aria-hidden="true"></i>
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary nav-button"
-          style="display: inline-block;"
-          onclick="deleteWorker('${data.val().id}')"
-        >
-          <i class="fa fa-times" aria-hidden="true"></i>
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary nav-button"
-          style="display: inline-block;"
-        >
-          <i class="fas fa-arrow-alt-circle-right"></i> Ir al test
-        </button>
-      </div>
-    </td>
-  </tr>
-  `;
-    //???????
-    $('#workers-table').DataTable();
+  auth.onAuthStateChanged(function (user) {
+    if (user) {
+      db.ref('companies/' + auth.currentUser.uid + '/workers').on(
+        'child_added',
+        function (data) {
+          //debugger;
+          console.log(data.val());
+          //$('.table').DataTable().destroy();
+          if ($.fn.DataTable.isDataTable('#workers-table'))
+            $('#workers-table').DataTable().destroy();
+          document.getElementById('tableBodyOperators').innerHTML += `
+      <tr>
+        <td>${data.val().name}</td>
+        <td>${data.val().lastName}</td>
+        <td>${data.val().email}</td>
+        <td>
+          <div style="position: absolute;">
+          <span data-toggle="modal" data-target="#getOperatorModal">
+            <button
+            type="button"
+            class="btn btn-primary nav-button"
+            style="display: inline-block;"
+            data-toggle="tooltip" 
+            data-placement="top"
+            title="Ver operador"
+            onclick="getWorker('${data.val().id}',1)"
+            >
+            <i class="fa fa-eye" aria-hidden="true"></i>
+            </button>
+          </span>
+          <span data-toggle="modal" data-target="#editOperatorModal">
+            <button
+            type="button"
+            class="btn btn-primary nav-button"
+            style="display: inline-block;"
+            data-toggle="tooltip" 
+            data-placement="top"
+            title="Editar operador"
+            onclick="getWorker('${data.val().id}',2)"
+            >
+            <i class="fa fa-pencil" aria-hidden="true"></i>
+            </button>
+          </span>
+          <button
+            type="button"
+            class="btn btn-primary nav-button"
+            style="display: inline-block;"
+            data-toggle="tooltip" 
+            data-placement="top"
+            title="Eliminar operador"
+            onclick="deleteWorker('${data.val().id}')"
+          >
+            <i class="fa fa-times" aria-hidden="true"></i>
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary nav-button"
+            style="display: inline-block;"
+            data-toggle="tooltip" 
+            data-placement="top"
+            title="Ir a tests"
+          >
+          <i class="fa fa-file-text-o" aria-hidden="true"></i>
+          </button>
+          </div>
+        </td>
+      </tr>
+      `;
+          //???????
+          $('#workers-table').DataTable();
+        }
+      );
+    }
   });
-  console.log('Lorem Ipsum dolor sic amet');
+  //console.log('Lorem Ipsum dolor sic amet');
 }
 
 function generateWorkerId() {
@@ -250,23 +311,40 @@ function getWorker(workerId, type) {
 }
 
 function editWorker() {
-  workerObj = {
+  var workerObj = {
     id: document.getElementById('workerId').value,
     name: document.getElementById('workerNameEdit').value,
     lastName: document.getElementById('workerLastNameEdit').value,
     email: document.getElementById('workerEmailEdit').value,
     password: document.getElementById('workerPasswordEdit').value,
-    workerImage: document.getElementById('workerImageEdit').src,
+    photoUrl: document.getElementById('workerImageEdit').src,
   };
   var updates = {};
   updates['workers/' + workerObj.id + '/name'] = workerObj.name;
   updates['workers/' + workerObj.id + '/lastName'] = workerObj.lastName;
   updates['workers/' + workerObj.id + '/email'] = workerObj.email;
   updates['workers/' + workerObj.id + '/password'] = workerObj.password;
-  updates['workers/' + workerObj.id + '/photoUrl'] = workerObj.workerImage;
-  updates[
-    'companies/' + auth.currentUser.uid + '/workers/' + workerObj.id
-  ] = workerObj;
+  var desertRef = storage.ref().child('Operators pictures/' + workerObj.email);
+  desertRef
+    .delete()
+    .then(function () {
+      var imageRef = storage
+        .ref()
+        .child('Operators pictures')
+        .child(workObj.email);
+      imageRef.put(workerImageFile).then(function (result) {
+        imageRef.getDownloadURL().then(function (result) {
+          document.getElementById('workerImageEdit').src = result;
+          updates['workers/' + workerObj.id + '/photoUrl'] = result;
+          updates[
+            'companies/' + auth.currentUser.uid + '/workers/' + workerObj.id
+          ] = workerObj;
+        });
+      });
+    })
+    .catch(function (error) {
+      console.log(error.message);
+    });
   db.ref().update(updates);
   window.location.href = 'list.html';
 }
