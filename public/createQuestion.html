@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Montserrat:400,600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" type="text/css" href="./styles/styles.css" />
+    <script
+      src="https://kit.fontawesome.com/4aacf972ad.js"
+      crossorigin="anonymous"
+    ></script>
+    <title>Lista de operadores</title>
+  </head>
+  <body>
+    <div class="row nav-top">
+      <div class="col-lg-12">
+        <div class="row">
+          <div class="col-lg-6 col-md-4">
+            <a class="nav-title">GasoductosApp.</a>
+          </div>
+          <div class="col-lg-6 col-md-4">
+            <p id="userInSesion" style="color: white; text-align: center;"></p>
+          </div>
+          <button
+            type="button"
+            class="btn btn-light nav-button"
+            onclick="logOut()"
+          >
+            <i class="fas fa-sign-out-alt"></i> Salir
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6">
+          <h1 class="title-body-pages">Crear cuestionario</h1>
+        </div>
+        <div class="col-lg-6" style="margin-top: 20px;">
+          <button
+            type="button"
+            class="btn btn-secondary nav-button"
+            data-toggle="modal"
+            data-target="#createOperatorModal"
+          >
+            <i class="fa fa-paper-plane" aria-hidden="true"></i>
+            Enviar cuestionario
+          </button>
+        </div>
+      </div>
+      <div class="row" style="margin-top: 30px; margin-left: 30px;">
+        <div class="shadow card mb-3" style="width: 1060px; max-height: 600px;">
+          <div class="row no-gutters">
+            <div class="card-body">
+              <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                <li class="nav-item">
+                  <a
+                    class="nav-link active"
+                    id="pills-question-1"
+                    data-toggle="pill"
+                    href="#pills-q1"
+                    role="tab"
+                    aria-controls="pills-home"
+                    aria-selected="true"
+                    >Pregunta 1</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    id="pills-question-2"
+                    data-toggle="pill"
+                    href="#pills-q2"
+                    role="tab"
+                    aria-controls="pills-profile"
+                    aria-selected="false"
+                    >Pregunta 2</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    id="pills-question-3"
+                    data-toggle="pill"
+                    href="#pills-q3"
+                    role="tab"
+                    aria-controls="pills-contact"
+                    aria-selected="false"
+                    >Pregunta 3</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    id="pills-question-4"
+                    data-toggle="pill"
+                    href="#pills-q4"
+                    role="tab"
+                    aria-controls="pills-contact"
+                    aria-selected="false"
+                    >Pregunta 4</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    id="pills-question-5"
+                    data-toggle="pill"
+                    href="#pills-q5"
+                    role="tab"
+                    aria-controls="pills-contact"
+                    aria-selected="false"
+                    >Pregunta 5</a
+                  >
+                </li>
+              </ul>
+              <div class="tab-content" id="pills-tabContent">
+                <!--en el tab desde el href se especifica el id del pane-->
+                <div
+                  class="tab-pane fade show active"
+                  id="pills-q1"
+                  role="tabpanel"
+                  aria-labelledby="pills-home-tab"
+                >
+                  <div class="row">
+                    <div class="col-lg-12">
+                      <div class="form-group">
+                        <label
+                          class="label-login"
+                          style="font-family: Montserrat;"
+                          >Enunciado</label
+                        >
+                        <textarea
+                          class="form-control"
+                          id=""
+                          rows="3"
+                        ></textarea>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-lg-6">
+                      <label
+                        class="label-login"
+                        style="font-family: Montserrat;"
+                        >Opciones</label
+                      >
+                      <div class="row">
+                        <div class="col-lg-12" style="margin-bottom: 10px;">
+                          <input
+                            type="text"
+                            class="form-control"
+                            placeholder="Opción A"
+                          />
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-lg-12" style="margin-bottom: 10px;">
+                          <input
+                            type="text"
+                            class="form-control"
+                            placeholder="Opción B"
+                          />
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-lg-12" style="margin-bottom: 10px;">
+                          <input
+                            type="text"
+                            class="form-control"
+                            placeholder="Opción C"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-lg-6">
+                      <div class="row">
+                        <div class="col-lg-6">
+                          <div class="row">
+                            <div class="col-lg-12">
+                              <label
+                                class="label-login"
+                                style="font-family: Montserrat;"
+                                >Respuesta correcta</label
+                              >
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-lg-12">
+                              <select id="" class="form-control">
+                                <option>Opción A</option>
+                                <option>Opción B</option>
+                                <option>Opción C</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-lg-6">
+                          <div class="row">
+                            <div class="col-lg-12">
+                              <div class="row">
+                                <div class="col-lg-12">
+                                  <label
+                                    class="label-login"
+                                    style="font-family: Montserrat;"
+                                    >Valor de pregunta</label
+                                  >
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-lg-5">
+                              <input type="number" class="form-control" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script
+      src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+      integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+      integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+      integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase.js"></script>
+
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+         https://firebase.google.com/docs/web/setup#available-libraries -->
+    <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-analytics.js"></script>
+
+    <script type="text/javascript" src="./firebase/firebaseConfig.js"></script>
+    <script type="text/javascript" src="./firebase/firebase.js"></script>
+    <script>
+      getCompany();
+    </script>
+  </body>
+</html>
