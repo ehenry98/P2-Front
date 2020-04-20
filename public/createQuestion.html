@@ -50,12 +50,7 @@
           <h1 class="title-body-pages">Crear cuestionario</h1>
         </div>
         <div class="col-lg-6" style="margin-top: 20px;">
-          <button
-            type="button"
-            class="btn btn-secondary nav-button"
-            data-toggle="modal"
-            data-target="#createOperatorModal"
-          >
+          <button type="button" class="btn btn-secondary nav-button">
             <i class="fa fa-paper-plane" aria-hidden="true"></i>
             Enviar cuestionario
           </button>
@@ -201,9 +196,9 @@
                           <div class="row">
                             <div class="col-lg-12">
                               <select id="" class="form-control">
-                                <option>Opción A</option>
-                                <option>Opción B</option>
-                                <option>Opción C</option>
+                                <option value="0">Opción A</option>
+                                <option value="1">Opción B</option>
+                                <option value="2">Opción C</option>
                               </select>
                             </div>
                           </div>
@@ -263,8 +258,5 @@
 
     <script type="text/javascript" src="./firebase/firebaseConfig.js"></script>
     <script type="text/javascript" src="./firebase/firebase.js"></script>
-    <script>
-      getCompany();
-    </script>
   </body>
 </html>
