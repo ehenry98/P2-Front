@@ -460,3 +460,169 @@ function setCookie(cname, cvalue, exdays) {
   let expires = "expires="+ d.toUTCString();
   document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
+//let qNumber = 2;
+function addQuestion(qNumber) {
+  document.getElementById('pills-tab').innerHTML+=`
+  <li class="nav-item">
+    <a
+      class="nav-link"
+      id="pills-question-${qNumber}"
+      data-toggle="pill"
+      href="#pills-q${qNumber}"
+      role="tab"
+      aria-controls="pills-contact"
+      aria-selected="false"
+      >Pregunta ${qNumber}</a
+      >
+  </li>
+  `;
+  document.getElementById('pills-tabContent').innerHTML+=`
+  <div
+    class="tab-pane fade"
+    id="pills-q${qNumber}"
+    role="tabpanel"
+    aria-labelledby="pills-home-tab"
+  >
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="form-group">
+          <label
+            class="label-login"
+            style="font-family: Montserrat;"
+            >Enunciado</label
+          >
+          <textarea
+            class="form-control"
+            id="enunciado-${qNumber}"
+            rows="3"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-6">
+        <label
+          class="label-login"
+          style="font-family: Montserrat;"
+          >Opciones</label
+        >
+        <div class="row">
+          <div class="col-lg-12" style="margin-bottom: 10px;">
+            <input
+              type="text"
+              id="op-a-${qNumber}"
+              class="form-control"
+              placeholder="Opción A"
+            />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12" style="margin-bottom: 10px;">
+            <input
+              type="text"
+              id="op-b-${qNumber}"
+              class="form-control"
+              placeholder="Opción B"
+            />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12" style="margin-bottom: 10px;">
+            <input
+              type="text"
+              id="op-c-${qNumber}"
+              class="form-control"
+              placeholder="Opción C"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="row">
+          <div class="col-lg-6">
+            <div class="row">
+              <div class="col-lg-12">
+                <label
+                  class="label-login"
+                  style="font-family: Montserrat;"
+                  >Respuesta correcta</label
+                >
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-lg-12">
+                <select id="resp-${qNumber}" class="form-control">
+                  <option value="0">Opción A</option>
+                  <option value="1">Opción B</option>
+                  <option value="2">Opción C</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="row">
+              <div class="col-lg-12">
+                <div class="row">
+                  <div class="col-lg-12">
+                    <label
+                      class="label-login"
+                      style="font-family: Montserrat;"
+                      >Valor de pregunta</label
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-lg-5">
+                <input
+                  type="number"
+                  id="grade-${qNumber}"
+                  class="form-control"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  `;
+  //qNumber++;
+}
+function loadQuestions() {
+  for (let i = 1; i <= 5; i++){
+    addQuestion(i);
+  }
+}
+
+function addQuestionnaire() {
+  firebase.auth().onAuthStateChanged(async function(user) {
+    if (user) {
+      const questionArray = [];
+      for (let i = 1; i <= 5; i++) {
+        const question = {
+          statement: document.getElementById('enunciado-'+i).value,
+          value: document.getElementById('grade-'+i).value,
+          optionA: document.getElementById('op-a-'+i).value,
+          optionB: document.getElementById('op-b-'+i).value,
+          optionC: document.getElementById('op-c-'+i).value,
+          ans: document.getElementById('resp-'+i).value,
+        };
+        questionArray.push(question);
+      }
+      const questionnarieId =await db.ref(`/companies/${user.uid}/questionnaries`).push().key;
+      db.ref(`/companies/${user.uid}/questionnaries/${questionnarieId}`).set({
+        id:questionnarieId,
+        questions:questionArray,
+      });
+      console.log('Questionnaire loaded!')
+    }
+  });
+}
+
+// function removeQuestion() {
+//   qNumber--;
+//   document.getElementById('pills-tab').children[qNumber].remove();
+//   document.getElementById('pills-tabContent').children[qNumber].remove();
+// }
