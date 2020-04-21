@@ -6,6 +6,30 @@ var workerImageUrl;
 const auth = firebase.auth();
 const db = firebase.database();
 const storage = firebase.storage();
+const cookieName = 'user';
+//Redirect
+firebase.auth().onAuthStateChanged(function(user) {
+  if (user) {
+    console.log('admin in session');
+    if(window.location.href.search('index.html') !== -1 || window.location.href.search('login.html') !== -1){
+      window.location.href = 'list.html';
+    }
+  } else {
+    if (getCookie(cookieName)) {
+      console.log('worker in session');
+      if(window.location.href.search('question.html') === -1){
+        window.location.href = 'question.html';
+      }
+    } else {
+      console.log('no user in session');
+      if(window.location.href.search('login.html') === -1
+      && window.location.href.search('index.html') === -1
+      && window.location.href.search('register.html') === -1){
+        window.location.href = 'index.html';
+      }
+    }
+  }
+});
 
 function setCompanyPicture(event) {
   imageFile = event.target.files[0];
@@ -78,20 +102,63 @@ function logIn() {
       console.log('Usuario logeado correctamente');
     })
     .catch(function (error) {
-      swal({
-        title: 'Usuario o contraseña incorrectos!',
-        text: 'Intente de nuevo',
-        icon: 'warning',
-        button: 'Ok',
+      db.ref('workers/')
+      .once('value',(snapshot) =>{
+        const workerExist =
+          snapshot.forEach((worker) =>{
+            const workerInfo = worker.val();
+            const workerFound =
+              workerInfo.email === userEmail
+              && workerInfo.password === userPassword;
+            if(workerFound){
+              console.log('workerInfo:');
+              console.log(workerInfo);
+              if (workerInfo.isActive) {
+                const workerData = {
+                  id: workerInfo.id,
+                  company: workerInfo.companyEmailRef,
+                  isActive: workerInfo.isActive,
+                };
+                setCookie(cookieName,JSON.stringify(workerData),1); 
+              } else {
+                swal({
+                  title: 'Usuario deshabilitado',
+                  text: 'Su usuario ha sido deshabilitado por el administrador de su empresa, '
+                  +'por favor comunicarse con este para más información.',
+                  icon: 'warning',
+                  button: 'Ok',
+                });
+              }
+            }
+            return workerFound;
+          });
+        if (!workerExist) {
+          swal({
+            title: 'Usuario o contraseña incorrectos!',
+            text: 'Intente de nuevo',
+            icon: 'warning',
+            button: 'Ok',
+          });
+        } else {
+          if (getCookie(cookieName)) {
+            //window.location.href = 'question.html';
+            window.location.href = 'list.html';
+          }
+        }
       });
     });
 }
 
 function logOut() {
-  auth.signOut().then(function () {
-    console.log('Usuario ha cerrado sesion');
+  if (getCookie(cookieName)) {
+    setCookie(cookieName,null,0);
     window.location.href = 'login.html';
-  });
+  } else {
+    auth.signOut().then(function () {
+      console.log('Usuario ha cerrado sesion');
+      window.location.href = 'login.html';
+    }); 
+  }
 }
 
 function recoverPassword() {
@@ -305,6 +372,7 @@ function getWorker(workerId, type) {
       document.getElementById(
         'workerPasswordEdit'
       ).value = snapshot.val().password;
+      document.getElementById('workerStateEdit').checked = snapshot.val().isActive;
       document.getElementById('workerImageEdit').src = snapshot.val().photoUrl;
       document.getElementById('workerId').value = workerId;
     }
@@ -318,6 +386,7 @@ function editWorker() {
     lastName: document.getElementById('workerLastNameEdit').value,
     email: document.getElementById('workerEmailEdit').value,
     password: document.getElementById('workerPasswordEdit').value,
+    isActive: document.getElementById('workerStateEdit').checked,
     photoUrl: document.getElementById('workerImageEdit').src,
   };
   var updates = {};
@@ -325,6 +394,7 @@ function editWorker() {
   updates['workers/' + workerObj.id + '/lastName'] = workerObj.lastName;
   updates['workers/' + workerObj.id + '/email'] = workerObj.email;
   updates['workers/' + workerObj.id + '/password'] = workerObj.password;
+  updates['workers/' + workerObj.id + '/isActive'] = workerObj.isActive;
   var desertRef = storage.ref().child('Operators pictures/' + workerObj.email);
   desertRef
     .delete()
@@ -366,4 +436,27 @@ function deleteWorker(workerId) {
       window.location.href = 'list.html';
     }
   });
+}
+
+function getCookie(cname) {
+  let name = cname + "=";
+  let decodedCookie = decodeURIComponent(document.cookie);
+  let ca = decodedCookie.split(';');
+  for(let i = 0; i <ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return "";
+}
+
+function setCookie(cname, cvalue, exdays) {
+  let d = new Date();
+  d.setTime(d.getTime() + (exdays*24*60*60*1000));
+  let expires = "expires="+ d.toUTCString();
+  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
