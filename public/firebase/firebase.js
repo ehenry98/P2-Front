@@ -16,11 +16,11 @@ function setWorkerPicture(event) {
 }
 
 function createCompany() {
-  agentName = document.getElementById('agentName').value;
-  companyName = document.getElementById('company').value;
-  docType = document.getElementById('docType').value;
-  docNum = document.getElementById('docNum').value;
-  phone = document.getElementById('phone').value;
+  const agentName = document.getElementById('agentName').value;
+  const companyName = document.getElementById('company').value;
+  const docType = document.getElementById('docType').value;
+  const docNum = document.getElementById('docNum').value;
+  const phone = document.getElementById('phone').value;
   console.log(agentName);
   console.log(currentUser.uid);
   db.ref('companies/' + currentUser.uid).set({
@@ -42,7 +42,8 @@ function registerCompany() {
   var userPassword = document.getElementById('userPassword').value;
   auth
     .createUserWithEmailAndPassword(userEmail, userPassword)
-    .then(function () {
+    .then(function (data) {
+      console.log(data);
       console.log('Usuario empresa registrado');
     })
     .catch(function (error) {
@@ -72,7 +73,7 @@ function logIn() {
   userPassword = document.getElementById('userPassword').value;
   auth
     .signInWithEmailAndPassword(userEmail, userPassword)
-    .then(function () {
+    .then(function (data) {
       window.location.href = 'profile.html';
       console.log('Usuario logeado correctamente');
     })
