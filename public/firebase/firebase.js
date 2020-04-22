@@ -695,7 +695,6 @@ function loadQuestions() {
     }
   }
 }
-
 function addQuestionnaire() {
   firebase.auth().onAuthStateChanged(async function (user) {
     if (user) {
@@ -1046,3 +1045,6 @@ function validateEmail(email) {
 //   document.getElementById('pills-tab').children[qNumber].remove();
 //   document.getElementById('pills-tabContent').children[qNumber].remove();
 // }
+if(window.location.href.search('createQuestion.html')===-1){
+  deleteCookie(questionCookie);
+}
