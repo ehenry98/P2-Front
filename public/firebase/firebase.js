@@ -819,6 +819,29 @@ function diplayWorkerResults(id) {
   //window.location.href='workerResults.html';
   window.location.href='question.html';
 }
+
+function getWorkerResults() {
+  google.charts.load('current', {'packages':['corechart']});
+  google.charts.setOnLoadCallback(async () =>{
+    const workerResults = (await db.ref(`/workers/${getCookie(wResultsCookie)}/qResult`).once('value')).val();
+    var data = google.visualization.arrayToDataTable([
+      ['Preguntas', 'Pts'],
+      ['Preguntas acertadas', workerResults.score],
+      ['Preguntas erradas', workerResults.maxScore - workerResults.score],
+    ]);
+    var options = {
+      title: 'Preguntas acertadas vs erradas (Pts)'
+    };
+
+    var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+
+    chart.draw(data, options);
+  });
+}
+function backToList() {
+  deleteCookie(wResultsCookie);
+  window.location.href="list.html";
+}
 function deleteWorkerResults(){
   auth.onAuthStateChanged((user) =>{
     db.ref(`/workers/${getCookie(wResultsCookie)}/qResult`).remove();
