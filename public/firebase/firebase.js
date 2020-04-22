@@ -631,71 +631,170 @@ function addQuestionnaire() {
   });
 }
 
-function loadQuestionnaire(){
-  let template = '';
-  for (let i = 0; i < 5; i++) {
+async function initQuestionnaire(){
+  try {
+    const userInfo = JSON.parse(getCookie(cookieName));
+    const userData = (await db.ref(`/workers/${userInfo.id}`).once('value')).val();
+    console.log(userData);
+    const companyData = (await db.ref(`/companies/${userInfo.company}`).once('value')).val();
+    document.getElementById('questionnaire-title').innerHTML='Test de ' + companyData.companyName;
+    if(userData.qResult){
+      const {qResult} = userData;
+      const {questions} = await fecthQuestionnaireWorker();
+      const template = qResult.answers.map((ans,i) => {
+        return questionnaireTemplate(questions[i],i,true,ans.option)
+      }).reduce((prev='',curr) => prev + curr);
+      document.getElementById('questionnaire-body').innerHTML+=template;
+      questionnaireResult(qResult.score,qResult.maxScore);
+    } else {
+      loadQuestionnaire();
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+async function fecthQuestionnaireWorker() {
+  const userInfo = JSON.parse(getCookie(cookieName));
+  const questionnaries = (await db.ref(`companies/${userInfo.company}/questionnaries`).once('value')).val();
+  return questionnaries[Object.keys(questionnaries)[0]];
+}
+async function loadQuestionnaire(){
+  try {
+    const questionnarieData = await fecthQuestionnaireWorker();
+    console.log(questionnarieData);
+    //const questionarie = questionaries;
+    let template = '';
+    questionnarieData.questions.forEach((question,i) => {
+      console.log(question);
+      template+=questionnaireTemplate(question,i);
+    });
     template+=`
-      <div class="row">
-        <div class="col-lg-12">
-          <h5 class="p-title">Pregunta 1</h5>
+      <button type="button" class="btn btn-secondary" onclick="sendQuestionnaire()">
+        <i class="fa fa-paper-plane" aria-hidden="true"></i>
+        Enviar respuestas
+      </button>
+    `;
+    document.getElementById('questionnaire-body').innerHTML =template;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+function questionnaireTemplate(question,i,sol=false,res=''){
+  return `
+    <div id="question-${i}" class="shadow card mb-3 questionnarie">
+      <div class="card-body">
+        <h3 class="card-title">Pregunta ${(i+1)}</h3>
+        <p class="card-text">
+          ${question.statement}
+        </p>
+        <!--Type question component-->
+        <div class="custom-control custom-radio">
+          <input
+            type="radio"
+            id="op-a-${i}"
+            name="resp-${i}"
+            value="${question.ans==0?question.value:0}"
+            class="custom-control-input"
+            ${sol?'disabled':''}
+            ${res === 'a'?'checked':''}
+          />
+          <label class="custom-control-label" for="op-a-${i}"
+            >${question.optionA}</label
+          >
         </div>
-        <div class="col-lg-12 p-body">
-          ${enunciado}
+        <div class="custom-control custom-radio">
+          <input
+            type="radio"
+            id="op-b-${i}"
+            name="resp-${i}"
+            value="${question.ans==1?question.value:0}"
+            class="custom-control-input"
+            ${sol?'disabled':''}
+            ${res === 'b'?'checked':''}
+          />
+          <label class="custom-control-label" for="op-b-${i}"
+            >${question.optionB}</label
+          >
         </div>
-        <div class="col-lg-12">
-          <div class="custom-control custom-radio">
-            <input
-              type="radio"
-              id="customRadio1"
-              name="customRadio"
-              class="custom-control-input"
-            />
-            <label class="custom-control-label" for="customRadio1"
-              >${opcionA}</label
-            >
-          </div>
-          <div class="custom-control custom-radio">
-            <input
-              type="radio"
-              id="customRadio2"
-              name="customRadio"
-              class="custom-control-input"
-              checked
-            />
-            <label class="custom-control-label" for="customRadio2"
-              >Respuesta 2</label
-            >
-          </div>
-          <div class="custom-control custom-radio">
-            <input
-              type="radio"
-              id="customRadio3"
-              name="customRadio"
-              class="custom-control-input"
-            />
-            <label class="custom-control-label" for="customRadio3"
-              >Respuesta 3</label
-            >
-          </div>
-          <div class="custom-control custom-radio">
-            <input
-              type="radio"
-              id="customRadio4"
-              name="customRadio"
-              class="custom-control-input"
-            />
-            <label class="custom-control-label" for="customRadio4"
-              >Respuesta 4</label
-            >
+        <div class="custom-control custom-radio">
+          <input
+            type="radio"
+            id="op-c-${i}"
+            name="resp-${i}"
+            value="${question.ans==1?question.value:0}"
+            class="custom-control-input"
+            ${sol?'disabled':''}
+            ${res === 'c'?'checked':''}
+          />
+          <label class="custom-control-label" for="op-c-${i}"
+            >${question.optionC}</label
+          >
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function sendQuestionnaire(){
+  try {
+    const questions = document.getElementsByClassName('questionnarie').length;
+    const questionarieAnswers = [];
+    const scores = []
+    for (let i = 0; i < questions; i++) {
+      const option = Array.from(document.getElementsByName('resp-'+i)).find((ans) => ans.checked);
+      if (!option) {
+        throw "Questionnaire incomplete"
+      }
+      scores.push(Array.from(document.getElementsByName('resp-'+i)).find((ans) => ans.value!=0).value);
+      questionarieAnswers.push({
+        option:option.id[3],
+        value: option.value,
+      });
+    }
+    const result = {
+      answers:questionarieAnswers,
+      maxScore:scores.reduce((prev=0,curr) => Number(prev) + Number(curr)),
+      score:questionarieAnswers.map((el) => el.value).reduce((prev=0,curr,)=> Number(prev) + Number(curr)),
+    }
+    const update={};
+    const userInfo = JSON.parse(getCookie(cookieName));
+    update[`/companies/${userInfo.company}/workers/${userInfo.id}/qResult`]=result;
+    update[`/workers/${userInfo.id}/qResult`]=result;
+    db.ref().update(update, (err) => {
+      if (!err) {
+        window.location.href = 'question.html';
+      } else {
+        console.log(err);
+      }
+    });
+  } catch (error) {
+    swal({
+      title: 'Cuestionario incompleto!',
+      text: 'Debe terminar de responder el cuestionario antes de enviarlo.',
+      icon: 'warning',
+      button: 'Ok',
+    });
+    console.log(error);
+  }
+  
+  //document.getElementsByClassName('question').
+}
+
+function questionnaireResult(score,maxScore) {
+  document.getElementById('questionnaire').innerHTML+= `
+    <div class="col-lg-4">
+      <div class="col-lg-12 score">
+        <div class="row">
+          <div class="col-lg-12 score-title">
+            <h2>Puntaje del test</h2>
+            <p class="score-body">${score}/${maxScore}<span class="pts">Pts</span></p>
           </div>
         </div>
       </div>
-    `;
-    
-  }
-  document.getElementById('questionnaireBody').innerHTML ='';
+    </div>
+  `;
 }
-
 // function removeQuestion() {
 //   qNumber--;
 //   document.getElementById('pills-tab').children[qNumber].remove();
