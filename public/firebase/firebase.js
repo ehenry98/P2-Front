@@ -8,23 +8,28 @@ const db = firebase.database();
 const storage = firebase.storage();
 const cookieName = 'user';
 //Redirect
-firebase.auth().onAuthStateChanged(function(user) {
+firebase.auth().onAuthStateChanged(function (user) {
   if (user) {
     console.log('admin in session');
-    if(window.location.href.search('index.html') !== -1 || window.location.href.search('login.html') !== -1){
+    if (
+      window.location.href.search('index.html') !== -1 ||
+      window.location.href.search('login.html') !== -1
+    ) {
       window.location.href = 'list.html';
     }
   } else {
     if (getCookie(cookieName)) {
       console.log('worker in session');
-      if(window.location.href.search('question.html') === -1){
+      if (window.location.href.search('question.html') === -1) {
         window.location.href = 'question.html';
       }
     } else {
       console.log('no user in session');
-      if(window.location.href.search('login.html') === -1
-      && window.location.href.search('index.html') === -1
-      && window.location.href.search('register.html') === -1){
+      if (
+        window.location.href.search('login.html') === -1 &&
+        window.location.href.search('index.html') === -1 &&
+        window.location.href.search('register.html') === -1
+      ) {
         window.location.href = 'index.html';
       }
     }
@@ -102,36 +107,35 @@ function logIn() {
       console.log('Usuario logeado correctamente');
     })
     .catch(function (error) {
-      db.ref('workers/')
-      .once('value',(snapshot) =>{
-        const workerExist =
-          snapshot.forEach((worker) =>{
-            const workerInfo = worker.val();
-            const workerFound =
-              workerInfo.email === userEmail
-              && workerInfo.password === userPassword;
-            if(workerFound){
-              console.log('workerInfo:');
-              console.log(workerInfo);
-              if (workerInfo.isActive) {
-                const workerData = {
-                  id: workerInfo.id,
-                  company: workerInfo.companyEmailRef,
-                  isActive: workerInfo.isActive,
-                };
-                setCookie(cookieName,JSON.stringify(workerData),1); 
-              } else {
-                swal({
-                  title: 'Usuario deshabilitado',
-                  text: 'Su usuario ha sido deshabilitado por el administrador de su empresa, '
-                  +'por favor comunicarse con este para más información.',
-                  icon: 'warning',
-                  button: 'Ok',
-                });
-              }
+      db.ref('workers/').once('value', (snapshot) => {
+        const workerExist = snapshot.forEach((worker) => {
+          const workerInfo = worker.val();
+          const workerFound =
+            workerInfo.email === userEmail &&
+            workerInfo.password === userPassword;
+          if (workerFound) {
+            console.log('workerInfo:');
+            console.log(workerInfo);
+            if (workerInfo.isActive) {
+              const workerData = {
+                id: workerInfo.id,
+                company: workerInfo.companyEmailRef,
+                isActive: workerInfo.isActive,
+              };
+              setCookie(cookieName, JSON.stringify(workerData), 1);
+            } else {
+              swal({
+                title: 'Usuario deshabilitado',
+                text:
+                  'Su usuario ha sido deshabilitado por el administrador de su empresa, ' +
+                  'por favor comunicarse con este para más información.',
+                icon: 'warning',
+                button: 'Ok',
+              });
             }
-            return workerFound;
-          });
+          }
+          return workerFound;
+        });
         if (!workerExist) {
           swal({
             title: 'Usuario o contraseña incorrectos!',
@@ -151,13 +155,13 @@ function logIn() {
 
 function logOut() {
   if (getCookie(cookieName)) {
-    setCookie(cookieName,null,0);
+    setCookie(cookieName, null, 0);
     window.location.href = 'login.html';
   } else {
     auth.signOut().then(function () {
       console.log('Usuario ha cerrado sesion');
       window.location.href = 'login.html';
-    }); 
+    });
   }
 }
 
@@ -372,14 +376,16 @@ function getWorker(workerId, type) {
       document.getElementById(
         'workerPasswordEdit'
       ).value = snapshot.val().password;
-      document.getElementById('workerStateEdit').checked = snapshot.val().isActive;
+      document.getElementById(
+        'workerStateEdit'
+      ).checked = snapshot.val().isActive;
       document.getElementById('workerImageEdit').src = snapshot.val().photoUrl;
       document.getElementById('workerId').value = workerId;
     }
   });
 }
 
-function editWorker() {
+async function editWorker() {
   var workerObj = {
     id: document.getElementById('workerId').value,
     name: document.getElementById('workerNameEdit').value,
@@ -387,7 +393,7 @@ function editWorker() {
     email: document.getElementById('workerEmailEdit').value,
     password: document.getElementById('workerPasswordEdit').value,
     isActive: document.getElementById('workerStateEdit').checked,
-    photoUrl: document.getElementById('workerImageEdit').src,
+    photoUrl: document.getElementById('imageWorkerEdit').src,
   };
   var updates = {};
   updates['workers/' + workerObj.id + '/name'] = workerObj.name;
@@ -395,29 +401,26 @@ function editWorker() {
   updates['workers/' + workerObj.id + '/email'] = workerObj.email;
   updates['workers/' + workerObj.id + '/password'] = workerObj.password;
   updates['workers/' + workerObj.id + '/isActive'] = workerObj.isActive;
-  var desertRef = storage.ref().child('Operators pictures/' + workerObj.email);
-  desertRef
-    .delete()
-    .then(function () {
-      var imageRef = storage
-        .ref()
-        .child('Operators pictures')
-        .child(workObj.email);
-      imageRef.put(workerImageFile).then(function (result) {
-        imageRef.getDownloadURL().then(function (result) {
-          document.getElementById('workerImageEdit').src = result;
-          updates['workers/' + workerObj.id + '/photoUrl'] = result;
-          updates[
-            'companies/' + auth.currentUser.uid + '/workers/' + workerObj.id
-          ] = workerObj;
-        });
-      });
-    })
-    .catch(function (error) {
-      console.log(error.message);
+  const imageEdit = document.getElementById('imageWorkerEdit').files[0];
+  if (imageEdit) {
+    var imageRef = storage.ref().child('Operators pictures/' + workerObj.email);
+    let url = await imageRef.put(imageEdit).then(async function (result) {
+      return await imageRef.getDownloadURL();
     });
-  db.ref().update(updates);
-  window.location.href = 'list.html';
+    workerObj.photoUrl = url;
+    //document.getElementById('imageWorkerEdit').src = result;
+    updates['workers/' + workerObj.id + '/photoUrl'] = url;
+    updates[
+      'companies/' + auth.currentUser.uid + '/workers/' + workerObj.id
+    ] = workerObj;
+  } else {
+    console.log('Image doesnt exist');
+  }
+  db.ref().update(updates, (err) => {
+    if (!err) {
+      window.location.href = 'list.html';
+    }
+  });
 }
 
 function deleteWorker(workerId) {
@@ -439,10 +442,10 @@ function deleteWorker(workerId) {
 }
 
 function getCookie(cname) {
-  let name = cname + "=";
+  let name = cname + '=';
   let decodedCookie = decodeURIComponent(document.cookie);
   let ca = decodedCookie.split(';');
-  for(let i = 0; i <ca.length; i++) {
+  for (let i = 0; i < ca.length; i++) {
     let c = ca[i];
     while (c.charAt(0) == ' ') {
       c = c.substring(1);
@@ -451,18 +454,18 @@ function getCookie(cname) {
       return c.substring(name.length, c.length);
     }
   }
-  return "";
+  return '';
 }
 
 function setCookie(cname, cvalue, exdays) {
   let d = new Date();
-  d.setTime(d.getTime() + (exdays*24*60*60*1000));
-  let expires = "expires="+ d.toUTCString();
-  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+  d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
+  let expires = 'expires=' + d.toUTCString();
+  document.cookie = cname + '=' + cvalue + ';' + expires + ';path=/';
 }
 //let qNumber = 2;
 function addQuestion(qNumber) {
-  document.getElementById('pills-tab').innerHTML+=`
+  document.getElementById('pills-tab').innerHTML += `
   <li class="nav-item">
     <a
       class="nav-link"
@@ -476,7 +479,7 @@ function addQuestion(qNumber) {
       >
   </li>
   `;
-  document.getElementById('pills-tabContent').innerHTML+=`
+  document.getElementById('pills-tabContent').innerHTML += `
   <div
     class="tab-pane fade"
     id="pills-q${qNumber}"
@@ -591,32 +594,34 @@ function addQuestion(qNumber) {
   //qNumber++;
 }
 function loadQuestions() {
-  for (let i = 1; i <= 5; i++){
+  for (let i = 1; i <= 5; i++) {
     addQuestion(i);
   }
 }
 
 function addQuestionnaire() {
-  firebase.auth().onAuthStateChanged(async function(user) {
+  firebase.auth().onAuthStateChanged(async function (user) {
     if (user) {
       const questionArray = [];
       for (let i = 1; i <= 5; i++) {
         const question = {
-          statement: document.getElementById('enunciado-'+i).value,
-          value: document.getElementById('grade-'+i).value,
-          optionA: document.getElementById('op-a-'+i).value,
-          optionB: document.getElementById('op-b-'+i).value,
-          optionC: document.getElementById('op-c-'+i).value,
-          ans: document.getElementById('resp-'+i).value,
+          statement: document.getElementById('enunciado-' + i).value,
+          value: document.getElementById('grade-' + i).value,
+          optionA: document.getElementById('op-a-' + i).value,
+          optionB: document.getElementById('op-b-' + i).value,
+          optionC: document.getElementById('op-c-' + i).value,
+          ans: document.getElementById('resp-' + i).value,
         };
         questionArray.push(question);
       }
-      const questionnarieId =await db.ref(`/companies/${user.uid}/questionnaries`).push().key;
+      const questionnarieId = await db
+        .ref(`/companies/${user.uid}/questionnaries`)
+        .push().key;
       db.ref(`/companies/${user.uid}/questionnaries/${questionnarieId}`).set({
-        id:questionnarieId,
-        questions:questionArray,
+        id: questionnarieId,
+        questions: questionArray,
       });
-      console.log('Questionnaire loaded!')
+      console.log('Questionnaire loaded!');
     }
   });
 }
