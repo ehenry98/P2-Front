@@ -863,27 +863,44 @@ function sendQuestionnaire() {
 }
 
 function questionnaireResult(score, maxScore) {
-  document.getElementById('questionnaire').innerHTML += `
-    <div class="col-lg-4">
-      <div class="col-lg-12 score">
-        <div class="row">
-          <div class="col-lg-12 score-title">
-            <h2>Puntaje del test</h2>
-            <p class="score-body">${score}/${maxScore}<span class="pts">Pts</span></p>
-            <button 
-              type="button" 
-              class="btn btn-primary nav-button" 
-              onclick="getWorkerResults()"
-              data-toggle="modal"
-              data-target="#chart-modal"
-              >
-                Ver gráfica
-              </button>
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      document.getElementById('questionnaire').innerHTML += `
+        <div class="col-lg-4">
+          <div class="col-lg-12 score">
+            <div class="row">
+              <div class="col-lg-12 score-title">
+                <h2>Puntaje del test</h2>
+                <p class="score-body">${score}/${maxScore}<span class="pts">Pts</span></p>
+                <button 
+                  type="button" 
+                  class="btn btn-primary nav-button" 
+                  onclick="getWorkerResults()"
+                  data-toggle="modal"
+                  data-target="#chart-modal"
+                  >
+                    Ver gráfica
+                  </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  `;
+      `;
+    } else {
+      document.getElementById('questionnaire').innerHTML += `
+        <div class="col-lg-4">
+          <div class="col-lg-12 score">
+            <div class="row">
+              <div class="col-lg-12 score-title">
+                <h2>Puntaje del test</h2>
+                <p class="score-body">${score}/${maxScore}<span class="pts">Pts</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  });
 }
 
 function diplayWorkerResults(id) {
