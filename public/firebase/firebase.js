@@ -7,6 +7,7 @@ const auth = firebase.auth();
 const db = firebase.database();
 const storage = firebase.storage();
 const cookieName = 'user';
+const wResultsCookie = 'workerResults'
 //Redirect
 firebase.auth().onAuthStateChanged(function (user) {
   if (user) {
@@ -324,16 +325,17 @@ function getWorkers() {
           >
             <i class="fa fa-times" aria-hidden="true"></i>
           </button>
-          <button
+          ${data.val().qResult? `<button
             type="button"
             class="btn btn-primary nav-button"
             style="display: inline-block;"
             data-toggle="tooltip" 
             data-placement="top"
             title="Ir a tests"
+            onclick="diplayWorkerResults('${data.val().id}')"
           >
           <i class="fa fa-file-text-o" aria-hidden="true"></i>
-          </button>
+          </button>`: ''}
           </div>
         </td>
       </tr>
@@ -624,22 +626,47 @@ function addQuestionnaire() {
 
 async function initQuestionnaire(){
   try {
-    const userInfo = JSON.parse(getCookie(cookieName));
-    const userData = (await db.ref(`/workers/${userInfo.id}`).once('value')).val();
-    console.log(userData);
-    const companyData = (await db.ref(`/companies/${userInfo.company}`).once('value')).val();
-    document.getElementById('questionnaire-title').innerHTML='Test de ' + companyData.companyName;
-    if(userData.qResult){
-      const {qResult} = userData;
-      const {questions} = await fecthQuestionnaireWorker();
-      const template = qResult.answers.map((ans,i) => {
-        return questionnaireTemplate(questions[i],i,true,ans.option)
-      }).reduce((prev='',curr) => prev + curr);
-      document.getElementById('questionnaire-body').innerHTML+=template;
-      questionnaireResult(qResult.score,qResult.maxScore);
-    } else {
-      loadQuestionnaire();
-    }
+    auth.onAuthStateChanged(async (user) =>{
+      if (user) {
+
+        const userData = (await db.ref(`/workers/${getCookie(wResultsCookie)}`).once('value')).val();
+        console.log(userData);
+        const companyData = (await db.ref(`/companies/${user.uid}`).once('value')).val();
+        document.getElementById('questionnaire-title').innerHTML='Test de ' + companyData.companyName;
+        const {qResult} = userData;
+        const {questions} = companyData.questionnaries[Object.keys(companyData.questionnaries)[0]]
+        const template = qResult.answers.map((ans,i) => {
+          return questionnaireTemplate(questions[i],i,true,ans.option)
+        }).reduce((prev='',curr) => prev + curr)
+        + `
+          <button type="button" class="btn btn-secondary" onclick="deleteWorkerResults()">
+            <i class="fa fa-trash-o" aria-hidden="true"></i>
+            Borrar respuestas
+          </button>
+        `;
+        document.getElementById('questionnaire-body').innerHTML+=template;
+        questionnaireResult(qResult.score,qResult.maxScore);
+
+      } else {
+
+        const userInfo = JSON.parse(getCookie(cookieName));
+        const userData = (await db.ref(`/workers/${userInfo.id}`).once('value')).val();
+        console.log(userData);
+        const companyData = (await db.ref(`/companies/${userInfo.company}`).once('value')).val();
+        document.getElementById('questionnaire-title').innerHTML='Test de ' + companyData.companyName;
+        if(userData.qResult){
+          const {qResult} = userData;
+          const {questions} = await fecthQuestionnaireWorker();
+          const template = qResult.answers.map((ans,i) => {
+            return questionnaireTemplate(questions[i],i,true,ans.option)
+          }).reduce((prev='',curr) => prev + curr);
+          document.getElementById('questionnaire-body').innerHTML+=template;
+          questionnaireResult(qResult.score,qResult.maxScore);
+        } else {
+          loadQuestionnaire();
+        }
+      }
+    });
   } catch (error) {
     console.log(error);
   }
@@ -785,6 +812,20 @@ function questionnaireResult(score,maxScore) {
       </div>
     </div>
   `;
+}
+
+function diplayWorkerResults(id) {
+  setCookie(wResultsCookie,id,1);
+  //window.location.href='workerResults.html';
+  window.location.href='question.html';
+}
+function deleteWorkerResults(){
+  auth.onAuthStateChanged((user) =>{
+    db.ref(`/workers/${getCookie(wResultsCookie)}/qResult`).remove();
+    db.ref(`/companies/${user.uid}/workers/${getCookie(wResultsCookie)}/qResult`).remove();
+    deleteCookie(wResultsCookie);
+    window.location.href='list.html';
+  });
 }
 // function removeQuestion() {
 //   qNumber--;
