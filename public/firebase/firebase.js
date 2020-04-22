@@ -146,7 +146,7 @@ function logIn() {
         } else {
           if (getCookie(cookieName)) {
             //window.location.href = 'question.html';
-            window.location.href = 'list.html';
+            window.location.href = 'question.html';
           }
         }
       });
@@ -155,9 +155,10 @@ function logIn() {
 
 function logOut() {
   if (getCookie(cookieName)) {
-    setCookie(cookieName, null, 0);
+    deleteCookie(cookieName);
     window.location.href = 'login.html';
   } else {
+    deleteCookie(cookieName);
     auth.signOut().then(function () {
       console.log('Usuario ha cerrado sesion');
       window.location.href = 'login.html';
@@ -463,7 +464,11 @@ function setCookie(cname, cvalue, exdays) {
   let expires = 'expires=' + d.toUTCString();
   document.cookie = cname + '=' + cvalue + ';' + expires + ';path=/';
 }
-//let qNumber = 2;
+
+function deleteCookie(cname) {
+  document.cookie = cname +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+}
+
 function addQuestion(qNumber) {
   document.getElementById('pills-tab').innerHTML += `
   <li class="nav-item">

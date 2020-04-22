@@ -31,11 +31,9 @@
           <div class="col-lg-12 col-md-4">
             <a class="nav-title">GasoductosApp.</a>
           </div>
-          <a href="./index.html">
-            <button type="button" class="btn btn-light nav-button">
-              <i class="fas fa-sign-out-alt"></i> Salir
-            </button>
-          </a>
+          <button type="button" class="btn btn-light nav-button" onclick="logOut()">
+            <i class="fas fa-sign-out-alt"></i> Salir
+          </button>
         </div>
       </div>
     </div>
@@ -367,5 +365,15 @@
       integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
       crossorigin="anonymous"
     ></script>
+
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase.js"></script>
+
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+         https://firebase.google.com/docs/web/setup#available-libraries -->
+    <script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-analytics.js"></script>
+
+    <script type="text/javascript" src="./firebase/firebaseConfig.js"></script>
+    <script type="text/javascript" src="./firebase/firebase.js"></script>
   </body>
 </html>
