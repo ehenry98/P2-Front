@@ -8,6 +8,7 @@ const db = firebase.database();
 const storage = firebase.storage();
 const cookieName = 'user';
 const wResultsCookie = 'workerResults';
+const questionCookie = 'questionnaireId'
 //Redirect
 firebase.auth().onAuthStateChanged(function (user) {
   if (user) {
@@ -498,7 +499,29 @@ function deleteCookie(cname) {
   document.cookie = cname + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 }
 
-function addQuestion(qNumber) {
+function prepareWorkersList(){
+  auth.onAuthStateChanged(async (user) =>{
+    if (user) {
+      const {questionnaries} = (await db.ref(`/companies/${user.uid}/`).once('value')).val();
+      if(questionnaries){
+        document.getElementById('q-btn').innerHTML = `
+          <i class="fa fa-pencil" aria-hidden="true"></i>
+          Editar cuestionario
+        `;
+        setCookie(questionCookie,Object.keys(questionnaries)[0],1);
+      }else{
+        document.getElementById('q-btn').innerHTML = `
+          <i class="fa fa-plus" aria-hidden="true"></i>
+          Crear cuestionario
+        `;
+      }
+      console.log(questionnaries);
+    }
+  });
+  getWorkers();
+}
+
+function addQuestion(qNumber,qData=null) {
   document.getElementById('pills-tab').innerHTML += `
   <li class="nav-item">
     <a
@@ -532,7 +555,7 @@ function addQuestion(qNumber) {
             class="form-control"
             id="enunciado-${qNumber}"
             rows="3"
-          ></textarea>
+          >${qData ? qData.statement:''}</textarea>
         </div>
       </div>
     </div>
@@ -550,6 +573,7 @@ function addQuestion(qNumber) {
               id="op-a-${qNumber}"
               class="form-control"
               placeholder="Opción A"
+              ${qData?`value = "${qData.optionA}"`:''}
             />
           </div>
         </div>
@@ -560,6 +584,7 @@ function addQuestion(qNumber) {
               id="op-b-${qNumber}"
               class="form-control"
               placeholder="Opción B"
+              ${qData?`value = "${qData.optionB}"`:''}
             />
           </div>
         </div>
@@ -570,6 +595,7 @@ function addQuestion(qNumber) {
               id="op-c-${qNumber}"
               class="form-control"
               placeholder="Opción C"
+              ${qData?`value = "${qData.optionC}"`:''}
             />
           </div>
         </div>
@@ -589,9 +615,9 @@ function addQuestion(qNumber) {
             <div class="row">
               <div class="col-lg-12">
                 <select id="resp-${qNumber}" class="form-control">
-                  <option value="0">Opción A</option>
-                  <option value="1">Opción B</option>
-                  <option value="2">Opción C</option>
+                  <option value="0" ${qData && qData.ans==0?'selected':''}>Opción A</option>
+                  <option value="1" ${qData && qData.ans==1?'selected':''}>Opción B</option>
+                  <option value="2" ${qData && qData.ans==2?'selected':''}>Opción C</option>
                 </select>
               </div>
             </div>
@@ -616,6 +642,7 @@ function addQuestion(qNumber) {
                   type="number"
                   id="grade-${qNumber}"
                   class="form-control"
+                  value="${qData?qData.value:''}"
                 />
               </div>
             </div>
@@ -628,8 +655,44 @@ function addQuestion(qNumber) {
   //qNumber++;
 }
 function loadQuestions() {
-  for (let i = 1; i <= 5; i++) {
-    addQuestion(i);
+  if(getCookie(questionCookie)){
+    document.getElementById('q-header').innerHTML=`
+      <div class="col-lg-6">
+        <h1 class="title-body-pages">Actualizar cuestionario</h1>
+      </div>
+      <div class="col-lg-6" style="margin-top: 20px;">
+        <button type="button" class="btn btn-secondary nav-button" onclick="updateQuestionnaire()">
+          <i class="fa fa-paper-plane" aria-hidden="true"></i>
+          Enviar cuestionario
+        </button>
+      </div>
+    `;
+    auth.onAuthStateChanged(async (user) =>{
+      const questionnaire = (await db
+        .ref(`/companies/${user.uid}/questionnaries/${getCookie(questionCookie)}`)
+        .once('value')).val();
+      console.log(questionnaire)
+      let i = 1;
+      for (const question of questionnaire.questions) {
+        addQuestion(i,await question);
+        i++;
+      }
+    });
+  } else {
+    document.getElementById('q-header').innerHTML=`
+      <div class="col-lg-6">
+        <h1 class="title-body-pages">Crear cuestionario</h1>
+      </div>
+      <div class="col-lg-6" style="margin-top: 20px;">
+        <button type="button" class="btn btn-secondary nav-button" onclick="addQuestionnaire()">
+          <i class="fa fa-paper-plane" aria-hidden="true"></i>
+          Enviar cuestionario
+        </button>
+      </div>
+    `;
+    for (let i = 1; i <= 5; i++) {
+      addQuestion(i);
+    }
   }
 }
 
@@ -749,6 +812,31 @@ async function loadQuestionnaire() {
   } catch (error) {
     console.log(error);
   }
+}
+
+async function updateQuestionnaire(){
+  firebase.auth().onAuthStateChanged(async function (user) {
+    if (user) {
+      const questionArray = [];
+      for (let i = 1; i <= 5; i++) {
+        const question = {
+          statement: document.getElementById('enunciado-' + i).value,
+          value: document.getElementById('grade-' + i).value,
+          optionA: document.getElementById('op-a-' + i).value,
+          optionB: document.getElementById('op-b-' + i).value,
+          optionC: document.getElementById('op-c-' + i).value,
+          ans: document.getElementById('resp-' + i).value,
+        };
+        questionArray.push(question);
+      }
+      db.ref(`/companies/${user.uid}/questionnaries/${getCookie(questionCookie)}`).update({
+        id: getCookie(questionCookie),
+        questions: questionArray,
+      });
+      window.location.href = 'list.html';
+      console.log('Questionnaire loaded!');
+    }
+  });
 }
 
 function questionnaireTemplate(question, i, sol = false, res = '') {
