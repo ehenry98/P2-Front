@@ -631,6 +631,71 @@ function addQuestionnaire() {
   });
 }
 
+function loadQuestionnaire(){
+  let template = '';
+  for (let i = 0; i < 5; i++) {
+    template+=`
+      <div class="row">
+        <div class="col-lg-12">
+          <h5 class="p-title">Pregunta 1</h5>
+        </div>
+        <div class="col-lg-12 p-body">
+          ${enunciado}
+        </div>
+        <div class="col-lg-12">
+          <div class="custom-control custom-radio">
+            <input
+              type="radio"
+              id="customRadio1"
+              name="customRadio"
+              class="custom-control-input"
+            />
+            <label class="custom-control-label" for="customRadio1"
+              >${opcionA}</label
+            >
+          </div>
+          <div class="custom-control custom-radio">
+            <input
+              type="radio"
+              id="customRadio2"
+              name="customRadio"
+              class="custom-control-input"
+              checked
+            />
+            <label class="custom-control-label" for="customRadio2"
+              >Respuesta 2</label
+            >
+          </div>
+          <div class="custom-control custom-radio">
+            <input
+              type="radio"
+              id="customRadio3"
+              name="customRadio"
+              class="custom-control-input"
+            />
+            <label class="custom-control-label" for="customRadio3"
+              >Respuesta 3</label
+            >
+          </div>
+          <div class="custom-control custom-radio">
+            <input
+              type="radio"
+              id="customRadio4"
+              name="customRadio"
+              class="custom-control-input"
+            />
+            <label class="custom-control-label" for="customRadio4"
+              >Respuesta 4</label
+            >
+          </div>
+        </div>
+      </div>
+    `;
+    
+  }
+  document.getElementById('questionnaireBody').innerHTML ='';
+}
+
 // function removeQuestion() {
 //   qNumber--;
 //   document.getElementById('pills-tab').children[qNumber].remove();
