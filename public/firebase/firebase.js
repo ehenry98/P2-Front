@@ -218,7 +218,6 @@ function getCompany() {
 
 function createOperator() {
   nameWorker = document.getElementById('nameWorker').value;
-  lastName = 'PRUEBA';
   emailWorker = document.getElementById('userEmailWorker').value;
   passwordWorker = document.getElementById('passwordWorker').value;
   workerId = generateWorkerId();
@@ -230,7 +229,6 @@ function createOperator() {
         id: workerId,
         companyEmailRef: auth.currentUser.uid,
         name: nameWorker,
-        lastName: lastName,
         email: emailWorker,
         password: passwordWorker,
         photoUrl: workerImageUrl,
@@ -286,7 +284,6 @@ function getWorkers() {
           document.getElementById('tableBodyOperators').innerHTML += `
       <tr>
         <td>${data.val().name}</td>
-        <td>${data.val().lastName}</td>
         <td>${data.val().email}</td>
         <td>
           <div style="position: absolute;">
@@ -364,15 +361,11 @@ function getWorker(workerId, type) {
   db.ref('/workers/' + workerId).once('value', function (snapshot) {
     if (type == 1) {
       document.getElementById('workerName').value = snapshot.val().name;
-      document.getElementById('workerLastName').value = snapshot.val().lastName;
       document.getElementById('workerEmail').value = snapshot.val().email;
       document.getElementById('workerPassword').value = snapshot.val().password;
       document.getElementById('workerImage').src = snapshot.val().photoUrl;
     } else {
       document.getElementById('workerNameEdit').value = snapshot.val().name;
-      document.getElementById(
-        'workerLastNameEdit'
-      ).value = snapshot.val().lastName;
       document.getElementById('workerEmailEdit').value = snapshot.val().email;
       document.getElementById(
         'workerPasswordEdit'
@@ -390,7 +383,6 @@ async function editWorker() {
   var workerObj = {
     id: document.getElementById('workerId').value,
     name: document.getElementById('workerNameEdit').value,
-    lastName: document.getElementById('workerLastNameEdit').value,
     email: document.getElementById('workerEmailEdit').value,
     password: document.getElementById('workerPasswordEdit').value,
     isActive: document.getElementById('workerStateEdit').checked,
@@ -398,7 +390,6 @@ async function editWorker() {
   };
   var updates = {};
   updates['workers/' + workerObj.id + '/name'] = workerObj.name;
-  updates['workers/' + workerObj.id + '/lastName'] = workerObj.lastName;
   updates['workers/' + workerObj.id + '/email'] = workerObj.email;
   updates['workers/' + workerObj.id + '/password'] = workerObj.password;
   updates['workers/' + workerObj.id + '/isActive'] = workerObj.isActive;
