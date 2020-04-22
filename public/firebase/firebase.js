@@ -7,7 +7,7 @@ const auth = firebase.auth();
 const db = firebase.database();
 const storage = firebase.storage();
 const cookieName = 'user';
-const wResultsCookie = 'workerResults'
+const wResultsCookie = 'workerResults';
 //Redirect
 firebase.auth().onAuthStateChanged(function (user) {
   if (user) {
@@ -221,54 +221,59 @@ function createOperator() {
   nameWorker = document.getElementById('nameWorker').value;
   emailWorker = document.getElementById('userEmailWorker').value;
   passwordWorker = document.getElementById('passwordWorker').value;
+  imageWorker = document.getElementById('imageWorker').files.length;
   workerId = generateWorkerId();
-  var imageRef = storage.ref().child('Operators pictures').child(emailWorker);
-  imageRef.put(workerImageFile).then(function (result) {
-    imageRef.getDownloadURL().then(function (result) {
-      workerImageUrl = result;
-      var workerObj = {
-        id: workerId,
-        companyEmailRef: auth.currentUser.uid,
-        name: nameWorker,
-        email: emailWorker,
-        password: passwordWorker,
-        photoUrl: workerImageUrl,
-        admin: false,
-      };
-      //Create reference into workers collection
-      db.ref('workers/' + workerId).set(workerObj);
-      //Create reference into companie/uid/workers
-      var update = {};
-      update[
-        'companies/' + auth.currentUser.uid + '/workers/' + workerId
-      ] = workerObj;
-      db.ref().update(update);
-      // admin
-      //   .auth()
-      //   .createUserWith({
-      //     email: emailWorker,
-      //     emailVerified: true,
-      //     password: passwordWorker,
-      //     disabled: false,
-      //   })
-      //   .then(function (userRecord) {
-      //     swal({
-      //       title: 'Operación exitosa',
-      //       text: 'Operador ' + nameWorker + ' ' + lastName,
-      //       icon: 'success',
-      //       button: 'Ok',
-      //     });
-      //   })
-      //   .catch(function (error) {
-      //     swal({
-      //       title: 'Error al crear operador',
-      //       text: error.message,
-      //       icon: 'warning',
-      //       button: 'Ok',
-      //     });
-      //   });
+  if (
+    nameWorker != '' &&
+    emailWorker != '' &&
+    passwordWorker != '' &&
+    imageWorker != 0
+  ) {
+    if (validateEmail(emailWorker)) {
+      var imageRef = storage
+        .ref()
+        .child('Operators pictures')
+        .child(emailWorker);
+      imageRef.put(workerImageFile).then(function (result) {
+        imageRef.getDownloadURL().then(function (result) {
+          workerImageUrl = result;
+          var workerObj = {
+            id: workerId,
+            companyEmailRef: auth.currentUser.uid,
+            name: nameWorker,
+            email: emailWorker,
+            password: passwordWorker,
+            photoUrl: workerImageUrl,
+            admin: false,
+          };
+          //Create reference into workers collection
+          db.ref('workers/' + workerId).set(workerObj);
+          //Create reference into companie/uid/workers
+          var update = {};
+          update[
+            'companies/' + auth.currentUser.uid + '/workers/' + workerId
+          ] = workerObj;
+          db.ref().update(update);
+        });
+      });
+    } else {
+      console.log('error campos');
+      swal({
+        title: 'Error de email',
+        text: 'Verifique la dirección de email',
+        icon: 'warning',
+        button: 'Ok',
+      });
+    }
+  } else {
+    console.log('error email');
+    swal({
+      title: 'Campos incompletos',
+      text: 'Debe completar todos los campos',
+      icon: 'warning',
+      button: 'Ok',
     });
-  });
+  }
 }
 
 function getWorkers() {
@@ -325,7 +330,9 @@ function getWorkers() {
           >
             <i class="fa fa-times" aria-hidden="true"></i>
           </button>
-          ${data.val().qResult? `<button
+          ${
+            data.val().qResult
+              ? `<button
             type="button"
             class="btn btn-primary nav-button"
             style="display: inline-block;"
@@ -335,7 +342,9 @@ function getWorkers() {
             onclick="diplayWorkerResults('${data.val().id}')"
           >
           <i class="fa fa-file-text-o" aria-hidden="true"></i>
-          </button>`: ''}
+          </button>`
+              : ''
+          }
           </div>
         </td>
       </tr>
@@ -382,39 +391,66 @@ function getWorker(workerId, type) {
 }
 
 async function editWorker() {
-  var workerObj = {
-    id: document.getElementById('workerId').value,
-    name: document.getElementById('workerNameEdit').value,
-    email: document.getElementById('workerEmailEdit').value,
-    password: document.getElementById('workerPasswordEdit').value,
-    isActive: document.getElementById('workerStateEdit').checked,
-    photoUrl: document.getElementById('imageWorkerEdit').src,
-  };
-  var updates = {};
-  updates['workers/' + workerObj.id + '/name'] = workerObj.name;
-  updates['workers/' + workerObj.id + '/email'] = workerObj.email;
-  updates['workers/' + workerObj.id + '/password'] = workerObj.password;
-  updates['workers/' + workerObj.id + '/isActive'] = workerObj.isActive;
-  const imageEdit = document.getElementById('imageWorkerEdit').files[0];
-  if (imageEdit) {
-    var imageRef = storage.ref().child('Operators pictures/' + workerObj.email);
-    let url = await imageRef.put(imageEdit).then(async function (result) {
-      return await imageRef.getDownloadURL();
-    });
-    workerObj.photoUrl = url;
-    //document.getElementById('imageWorkerEdit').src = result;
-    updates['workers/' + workerObj.id + '/photoUrl'] = url;
-    updates[
-      'companies/' + auth.currentUser.uid + '/workers/' + workerObj.id
-    ] = workerObj;
-  } else {
-    console.log('Image doesnt exist');
-  }
-  db.ref().update(updates, (err) => {
-    if (!err) {
-      window.location.href = 'list.html';
+  if (
+    document.getElementById('workerNameEdit').value != '' &&
+    document.getElementById('workerPasswordEdit').value != '' &&
+    document.getElementById('workerEmailEdit').value != ''
+  ) {
+    if (validateEmail(document.getElementById('workerEmailEdit').value)) {
+      var workerObj = {
+        id: document.getElementById('workerId').value,
+        name: document.getElementById('workerNameEdit').value,
+        email: document.getElementById('workerEmailEdit').value,
+        password: document.getElementById('workerPasswordEdit').value,
+        isActive: document.getElementById('workerStateEdit').checked,
+        photoUrl: document.getElementById('imageWorkerEdit').src,
+      };
+      var updates = {};
+      updates['workers/' + workerObj.id + '/name'] = workerObj.name;
+      updates['workers/' + workerObj.id + '/email'] = workerObj.email;
+      updates['workers/' + workerObj.id + '/password'] = workerObj.password;
+      updates['workers/' + workerObj.id + '/isActive'] = workerObj.isActive;
+      const imageEdit = document.getElementById('imageWorkerEdit').files[0];
+      if (imageEdit) {
+        var imageRef = storage
+          .ref()
+          .child('Operators pictures/' + workerObj.email);
+        let url = await imageRef.put(imageEdit).then(async function (result) {
+          return await imageRef.getDownloadURL();
+        });
+        workerObj.photoUrl = url;
+        //document.getElementById('imageWorkerEdit').src = result;
+        updates['workers/' + workerObj.id + '/photoUrl'] = url;
+        updates[
+          'companies/' + auth.currentUser.uid + '/workers/' + workerObj.id
+        ] = workerObj;
+      } else {
+        updates[
+          'companies/' + auth.currentUser.uid + '/workers/' + workerObj.id
+        ] = workerObj;
+        console.log('Image doesnt exist');
+      }
+      db.ref().update(updates, (err) => {
+        if (!err) {
+          window.location.href = 'list.html';
+        }
+      });
+    } else {
+      swal({
+        title: 'Error de email',
+        text: 'Verifique la dirección de email',
+        icon: 'warning',
+        button: 'Ok',
+      });
     }
-  });
+  } else {
+    swal({
+      title: 'Campos incompletos',
+      text: 'Debe completar todos los campos',
+      icon: 'warning',
+      button: 'Ok',
+    });
+  }
 }
 
 function deleteWorker(workerId) {
@@ -459,7 +495,7 @@ function setCookie(cname, cvalue, exdays) {
 }
 
 function deleteCookie(cname) {
-  document.cookie = cname +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+  document.cookie = cname + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 }
 
 function addQuestion(qNumber) {
@@ -619,49 +655,64 @@ function addQuestionnaire() {
         id: questionnarieId,
         questions: questionArray,
       });
+      window.location.href = 'list.html';
       console.log('Questionnaire loaded!');
     }
   });
 }
 
-async function initQuestionnaire(){
+async function initQuestionnaire() {
   try {
-    auth.onAuthStateChanged(async (user) =>{
+    auth.onAuthStateChanged(async (user) => {
       if (user) {
-
-        const userData = (await db.ref(`/workers/${getCookie(wResultsCookie)}`).once('value')).val();
+        const userData = (
+          await db.ref(`/workers/${getCookie(wResultsCookie)}`).once('value')
+        ).val();
         console.log(userData);
-        const companyData = (await db.ref(`/companies/${user.uid}`).once('value')).val();
-        document.getElementById('questionnaire-title').innerHTML='Test de ' + companyData.companyName;
-        const {qResult} = userData;
-        const {questions} = companyData.questionnaries[Object.keys(companyData.questionnaries)[0]]
-        const template = qResult.answers.map((ans,i) => {
-          return questionnaireTemplate(questions[i],i,true,ans.option)
-        }).reduce((prev='',curr) => prev + curr)
-        + `
-          <button type="button" class="btn btn-secondary" onclick="deleteWorkerResults()">
+        const companyData = (
+          await db.ref(`/companies/${user.uid}`).once('value')
+        ).val();
+        document.getElementById('questionnaire-title').innerHTML =
+          'Test de ' + companyData.companyName;
+        const { qResult } = userData;
+        const { questions } = companyData.questionnaries[
+          Object.keys(companyData.questionnaries)[0]
+        ];
+        const template =
+          qResult.answers
+            .map((ans, i) => {
+              return questionnaireTemplate(questions[i], i, true, ans.option);
+            })
+            .reduce((prev = '', curr) => prev + curr) +
+          `
+          <button type="button" class="btn btn-secondary" style="margin-bottom:20px;" onclick="deleteWorkerResults()">
             <i class="fa fa-trash-o" aria-hidden="true"></i>
             Borrar respuestas
           </button>
         `;
-        document.getElementById('questionnaire-body').innerHTML+=template;
-        questionnaireResult(qResult.score,qResult.maxScore);
-
+        document.getElementById('questionnaire-body').innerHTML += template;
+        questionnaireResult(qResult.score, qResult.maxScore);
       } else {
-
         const userInfo = JSON.parse(getCookie(cookieName));
-        const userData = (await db.ref(`/workers/${userInfo.id}`).once('value')).val();
+        const userData = (
+          await db.ref(`/workers/${userInfo.id}`).once('value')
+        ).val();
         console.log(userData);
-        const companyData = (await db.ref(`/companies/${userInfo.company}`).once('value')).val();
-        document.getElementById('questionnaire-title').innerHTML='Test de ' + companyData.companyName;
-        if(userData.qResult){
-          const {qResult} = userData;
-          const {questions} = await fecthQuestionnaireWorker();
-          const template = qResult.answers.map((ans,i) => {
-            return questionnaireTemplate(questions[i],i,true,ans.option)
-          }).reduce((prev='',curr) => prev + curr);
-          document.getElementById('questionnaire-body').innerHTML+=template;
-          questionnaireResult(qResult.score,qResult.maxScore);
+        const companyData = (
+          await db.ref(`/companies/${userInfo.company}`).once('value')
+        ).val();
+        document.getElementById('questionnaire-title').innerHTML =
+          'Test de ' + companyData.companyName;
+        if (userData.qResult) {
+          const { qResult } = userData;
+          const { questions } = await fecthQuestionnaireWorker();
+          const template = qResult.answers
+            .map((ans, i) => {
+              return questionnaireTemplate(questions[i], i, true, ans.option);
+            })
+            .reduce((prev = '', curr) => prev + curr);
+          document.getElementById('questionnaire-body').innerHTML += template;
+          questionnaireResult(qResult.score, qResult.maxScore);
         } else {
           loadQuestionnaire();
         }
@@ -673,36 +724,38 @@ async function initQuestionnaire(){
 }
 async function fecthQuestionnaireWorker() {
   const userInfo = JSON.parse(getCookie(cookieName));
-  const questionnaries = (await db.ref(`companies/${userInfo.company}/questionnaries`).once('value')).val();
+  const questionnaries = (
+    await db.ref(`companies/${userInfo.company}/questionnaries`).once('value')
+  ).val();
   return questionnaries[Object.keys(questionnaries)[0]];
 }
-async function loadQuestionnaire(){
+async function loadQuestionnaire() {
   try {
     const questionnarieData = await fecthQuestionnaireWorker();
     console.log(questionnarieData);
     //const questionarie = questionaries;
     let template = '';
-    questionnarieData.questions.forEach((question,i) => {
+    questionnarieData.questions.forEach((question, i) => {
       console.log(question);
-      template+=questionnaireTemplate(question,i);
+      template += questionnaireTemplate(question, i);
     });
-    template+=`
+    template += `
       <button type="button" class="btn btn-secondary" onclick="sendQuestionnaire()">
         <i class="fa fa-paper-plane" aria-hidden="true"></i>
         Enviar respuestas
       </button>
     `;
-    document.getElementById('questionnaire-body').innerHTML =template;
+    document.getElementById('questionnaire-body').innerHTML = template;
   } catch (error) {
     console.log(error);
   }
 }
 
-function questionnaireTemplate(question,i,sol=false,res=''){
+function questionnaireTemplate(question, i, sol = false, res = '') {
   return `
     <div id="question-${i}" class="shadow card mb-3 questionnarie">
       <div class="card-body">
-        <h3 class="card-title">Pregunta ${(i+1)}</h3>
+        <h3 class="card-title">Pregunta ${i + 1}</h3>
         <p class="card-text">
           ${question.statement}
         </p>
@@ -712,10 +765,10 @@ function questionnaireTemplate(question,i,sol=false,res=''){
             type="radio"
             id="op-a-${i}"
             name="resp-${i}"
-            value="${question.ans==0?question.value:0}"
+            value="${question.ans == 0 ? question.value : 0}"
             class="custom-control-input"
-            ${sol?'disabled':''}
-            ${res === 'a'?'checked':''}
+            ${sol ? 'disabled' : ''}
+            ${res === 'a' ? 'checked' : ''}
           />
           <label class="custom-control-label" for="op-a-${i}"
             >${question.optionA}</label
@@ -726,10 +779,10 @@ function questionnaireTemplate(question,i,sol=false,res=''){
             type="radio"
             id="op-b-${i}"
             name="resp-${i}"
-            value="${question.ans==1?question.value:0}"
+            value="${question.ans == 1 ? question.value : 0}"
             class="custom-control-input"
-            ${sol?'disabled':''}
-            ${res === 'b'?'checked':''}
+            ${sol ? 'disabled' : ''}
+            ${res === 'b' ? 'checked' : ''}
           />
           <label class="custom-control-label" for="op-b-${i}"
             >${question.optionB}</label
@@ -740,10 +793,10 @@ function questionnaireTemplate(question,i,sol=false,res=''){
             type="radio"
             id="op-c-${i}"
             name="resp-${i}"
-            value="${question.ans==1?question.value:0}"
+            value="${question.ans == 1 ? question.value : 0}"
             class="custom-control-input"
-            ${sol?'disabled':''}
-            ${res === 'c'?'checked':''}
+            ${sol ? 'disabled' : ''}
+            ${res === 'c' ? 'checked' : ''}
           />
           <label class="custom-control-label" for="op-c-${i}"
             >${question.optionC}</label
@@ -754,31 +807,41 @@ function questionnaireTemplate(question,i,sol=false,res=''){
   `;
 }
 
-function sendQuestionnaire(){
+function sendQuestionnaire() {
   try {
     const questions = document.getElementsByClassName('questionnarie').length;
     const questionarieAnswers = [];
-    const scores = []
+    const scores = [];
     for (let i = 0; i < questions; i++) {
-      const option = Array.from(document.getElementsByName('resp-'+i)).find((ans) => ans.checked);
+      const option = Array.from(document.getElementsByName('resp-' + i)).find(
+        (ans) => ans.checked
+      );
       if (!option) {
-        throw "Questionnaire incomplete"
+        throw 'Questionnaire incomplete';
       }
-      scores.push(Array.from(document.getElementsByName('resp-'+i)).find((ans) => ans.value!=0).value);
+      scores.push(
+        Array.from(document.getElementsByName('resp-' + i)).find(
+          (ans) => ans.value != 0
+        ).value
+      );
       questionarieAnswers.push({
-        option:option.id[3],
+        option: option.id[3],
         value: option.value,
       });
     }
     const result = {
-      answers:questionarieAnswers,
-      maxScore:scores.reduce((prev=0,curr) => Number(prev) + Number(curr)),
-      score:questionarieAnswers.map((el) => el.value).reduce((prev=0,curr,)=> Number(prev) + Number(curr)),
-    }
-    const update={};
+      answers: questionarieAnswers,
+      maxScore: scores.reduce((prev = 0, curr) => Number(prev) + Number(curr)),
+      score: questionarieAnswers
+        .map((el) => el.value)
+        .reduce((prev = 0, curr) => Number(prev) + Number(curr)),
+    };
+    const update = {};
     const userInfo = JSON.parse(getCookie(cookieName));
-    update[`/companies/${userInfo.company}/workers/${userInfo.id}/qResult`]=result;
-    update[`/workers/${userInfo.id}/qResult`]=result;
+    update[
+      `/companies/${userInfo.company}/workers/${userInfo.id}/qResult`
+    ] = result;
+    update[`/workers/${userInfo.id}/qResult`] = result;
     db.ref().update(update, (err) => {
       if (!err) {
         window.location.href = 'question.html';
@@ -795,18 +858,27 @@ function sendQuestionnaire(){
     });
     console.log(error);
   }
-  
+
   //document.getElementsByClassName('question').
 }
 
-function questionnaireResult(score,maxScore) {
-  document.getElementById('questionnaire').innerHTML+= `
+function questionnaireResult(score, maxScore) {
+  document.getElementById('questionnaire').innerHTML += `
     <div class="col-lg-4">
       <div class="col-lg-12 score">
         <div class="row">
           <div class="col-lg-12 score-title">
             <h2>Puntaje del test</h2>
             <p class="score-body">${score}/${maxScore}<span class="pts">Pts</span></p>
+            <button 
+              type="button" 
+              class="btn btn-primary nav-button" 
+              onclick="getWorkerResults()"
+              data-toggle="modal"
+              data-target="#chart-modal"
+              >
+                Ver gráfica
+              </button>
           </div>
         </div>
       </div>
@@ -815,41 +887,55 @@ function questionnaireResult(score,maxScore) {
 }
 
 function diplayWorkerResults(id) {
-  setCookie(wResultsCookie,id,1);
+  setCookie(wResultsCookie, id, 1);
   //window.location.href='workerResults.html';
-  window.location.href='question.html';
+  window.location.href = 'question.html';
 }
 
 function getWorkerResults() {
-  google.charts.load('current', {'packages':['corechart']});
-  google.charts.setOnLoadCallback(async () =>{
-    const workerResults = (await db.ref(`/workers/${getCookie(wResultsCookie)}/qResult`).once('value')).val();
+  google.charts.load('current', { packages: ['corechart'] });
+  google.charts.setOnLoadCallback(async () => {
+    const workerResults = (
+      await db
+        .ref(`/workers/${getCookie(wResultsCookie)}/qResult`)
+        .once('value')
+    ).val();
     var data = google.visualization.arrayToDataTable([
       ['Preguntas', 'Pts'],
       ['Preguntas acertadas', workerResults.score],
       ['Preguntas erradas', workerResults.maxScore - workerResults.score],
     ]);
     var options = {
-      title: 'Preguntas acertadas vs erradas (Pts)'
+      title: 'Preguntas acertadas vs erradas (Pts)',
     };
 
-    var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+    var chart = new google.visualization.PieChart(
+      document.getElementById('piechart')
+    );
 
     chart.draw(data, options);
   });
 }
 function backToList() {
   deleteCookie(wResultsCookie);
-  window.location.href="list.html";
+  window.location.href = 'list.html';
 }
-function deleteWorkerResults(){
-  auth.onAuthStateChanged((user) =>{
+function deleteWorkerResults() {
+  auth.onAuthStateChanged((user) => {
     db.ref(`/workers/${getCookie(wResultsCookie)}/qResult`).remove();
-    db.ref(`/companies/${user.uid}/workers/${getCookie(wResultsCookie)}/qResult`).remove();
+    db.ref(
+      `/companies/${user.uid}/workers/${getCookie(wResultsCookie)}/qResult`
+    ).remove();
     deleteCookie(wResultsCookie);
-    window.location.href='list.html';
+    window.location.href = 'list.html';
   });
 }
+
+function validateEmail(email) {
+  var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(String(email).toLowerCase());
+}
+
 // function removeQuestion() {
 //   qNumber--;
 //   document.getElementById('pills-tab').children[qNumber].remove();
