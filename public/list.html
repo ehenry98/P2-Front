@@ -53,15 +53,25 @@
           <h1 class="title-body-pages">Mis operadores</h1>
         </div>
         <div class="col-lg-6" style="margin-top: 20px;">
-          <button
-            type="button"
-            class="btn btn-secondary nav-button"
-            data-toggle="modal"
-            data-target="#createOperatorModal"
-          >
-            <i class="fa fa-plus" aria-hidden="true"></i>
-            Crear operador
-          </button>
+          <div class="row">
+            <div class="col-lg-6">
+              <button type="button" class="btn btn-secondary nav-button">
+                <i class="fa fa-plus" aria-hidden="true"></i>
+                Crear cuestionario
+              </button>
+            </div>
+            <div class="col-lg-6">
+              <button
+                type="button"
+                class="btn btn-secondary nav-button"
+                data-toggle="modal"
+                data-target="#createOperatorModal"
+              >
+                <i class="fa fa-plus" aria-hidden="true"></i>
+                Crear operador
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="col-lg-12" style="margin-top: 30px;">
@@ -74,7 +84,6 @@
           <thead>
             <tr>
               <th class="th-sm">Nombre</th>
-              <th class="th-sm">Apellido</th>
               <th class="th-sm">Email</th>
               <th class="th-sm">Acción</th>
             </tr>
@@ -213,23 +222,6 @@
                 <div class="row">
                   <div class="col-lg-12">
                     <label class="label-login" style="font-family: Montserrat;"
-                      >Apellido</label
-                    >
-                  </div>
-                  <div class="col-lg-12">
-                    <div class="input-group input-group-md">
-                      <input
-                        type="text"
-                        id="workerLastName"
-                        class="form-control"
-                        disabled
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-12">
-                    <label class="label-login" style="font-family: Montserrat;"
                       >Email</label
                     >
                   </div>
@@ -312,22 +304,6 @@
                       <input
                         type="text"
                         id="workerNameEdit"
-                        class="form-control"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-lg-12">
-                    <label class="label-login" style="font-family: Montserrat;"
-                      >Apellido</label
-                    >
-                  </div>
-                  <div class="col-lg-12">
-                    <div class="input-group input-group-md">
-                      <input
-                        type="text"
-                        id="workerLastNameEdit"
                         class="form-control"
                       />
                     </div>

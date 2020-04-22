@@ -190,11 +190,17 @@ h6 {
   border-left-color: #542bc8;
   border-bottom-left-radius: 0.25rem;
 }
+
 .card {
   border: 0px solid rgba(0, 0, 0, 0.125);
   border-left: 7px solid;
   border-left-color: #542bc8;
 }
+
+.card-profile {
+  border: 0px solid rgba(0, 0, 0, 0.125) !important;
+}
+
 .card-image {
   border: 1px solid rgba(0, 0, 0, 0.125);
 }
